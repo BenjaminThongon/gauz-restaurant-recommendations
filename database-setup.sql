@@ -67,7 +67,6 @@ CREATE POLICY "Restaurants are viewable by everyone"
 -- Allow anyone to insert restaurants (public access)
 CREATE POLICY "Anyone can insert restaurants" 
   ON restaurants FOR INSERT 
-  USING (true)
   WITH CHECK (true);
 
 -- 6. Create policies for profiles
