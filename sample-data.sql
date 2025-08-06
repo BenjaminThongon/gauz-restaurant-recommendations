@@ -19,7 +19,7 @@ SELECT
   trip_data.tripcode,
   trip_data.rating,
   trip_data.review_text,
-  trip_data.visit_date
+  trip_data.visit_date::date
 FROM restaurants r
 CROSS JOIN (
   VALUES 
