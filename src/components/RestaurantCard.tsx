@@ -1,5 +1,5 @@
 import React from 'react'
-import { Star, MapPin, Clock, DollarSign, Globe, Tag, ExternalLink } from 'lucide-react'
+import { Star, MapPin, DollarSign, Globe, Tag, ExternalLink } from 'lucide-react'
 import type { Restaurant } from '../lib/supabase'
 
 interface RestaurantCardProps {
@@ -113,13 +113,6 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
                   </span>
                 )}
               </div>
-            </div>
-          )}
-
-          {restaurant.tripcode && (
-            <div className="detail">
-              <Clock size={16} />
-              <span className="tripcode">Trip: {restaurant.tripcode}</span>
             </div>
           )}
         </div>

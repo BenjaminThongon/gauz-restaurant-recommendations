@@ -4,7 +4,7 @@ import { RestaurantCard } from './components/RestaurantCard'
 import { ReviewCard } from './components/ReviewCard'
 import { AddReview } from './components/AddReview'
 import { AddRestaurant } from './components/AddRestaurant'
-import { supabase, type Restaurant, type Trip } from './lib/supabase'
+import { supabase, type Restaurant, type Review } from './lib/supabase'
 import { ArrowLeft } from 'lucide-react'
 import './App.css'
 
