@@ -58,11 +58,6 @@ DROP POLICY IF EXISTS "Trips are viewable by everyone" ON trips;
 DROP POLICY IF EXISTS "Anyone can insert trips" ON trips;
 DROP POLICY IF EXISTS "Users can update their own trips" ON trips;
 DROP POLICY IF EXISTS "Users can delete their own trips" ON trips;
--- Legacy policies to clean up
-DROP POLICY IF EXISTS "Reviews are viewable by everyone" ON reviews;
-DROP POLICY IF EXISTS "Users can insert their own reviews" ON reviews;
-DROP POLICY IF EXISTS "Users can update their own reviews" ON reviews;
-DROP POLICY IF EXISTS "Users can delete their own reviews" ON reviews;
 
 -- 5. Create policies for restaurants (public read)
 CREATE POLICY "Restaurants are viewable by everyone" 
