@@ -1,6 +1,11 @@
 -- Database setup for Restaurant Reviews App
 -- Run these commands in your Supabase SQL Editor in order
 
+-- Drop existing tables if they exist (in reverse order due to foreign keys)
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS restaurants CASCADE;
+DROP TABLE IF EXISTS profiles CASCADE;
+
 -- 1. Create profiles table first (extends auth.users)
 CREATE TABLE profiles (
   id UUID REFERENCES auth.users PRIMARY KEY,
@@ -41,6 +46,18 @@ CREATE TABLE reviews (
 ALTER TABLE restaurants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Restaurants are viewable by everyone" ON restaurants;
+DROP POLICY IF EXISTS "Anyone can insert restaurants" ON restaurants;
+DROP POLICY IF EXISTS "Authenticated users can insert restaurants" ON restaurants;
+DROP POLICY IF EXISTS "Users can view all profiles" ON profiles;
+DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Reviews are viewable by everyone" ON reviews;
+DROP POLICY IF EXISTS "Users can insert their own reviews" ON reviews;
+DROP POLICY IF EXISTS "Users can update their own reviews" ON reviews;
+DROP POLICY IF EXISTS "Users can delete their own reviews" ON reviews;
 
 -- 5. Create policies for restaurants (public read)
 CREATE POLICY "Restaurants are viewable by everyone" 
@@ -84,6 +101,7 @@ CREATE POLICY "Users can delete their own reviews"
   USING (auth.uid() = user_id);
 
 -- 8. Create function to automatically create profile on user signup
+DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
