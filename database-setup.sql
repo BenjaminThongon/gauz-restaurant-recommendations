@@ -22,7 +22,7 @@ CREATE TABLE restaurants (
   dietary_restrictions TEXT[], -- Array of dietary restrictions
   image_url TEXT,
   image_base64 TEXT, -- For uploaded images
-  user_id UUID REFERENCES profiles(id), -- Who added this restaurant
+  user_id UUID REFERENCES profiles(id), -- Optional - who added this restaurant (nullable for anonymous)
   tripcode TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -47,10 +47,10 @@ CREATE POLICY "Restaurants are viewable by everyone"
   ON restaurants FOR SELECT 
   USING (true);
 
--- Allow authenticated users to insert restaurants (optional - remove if you don't want users to add restaurants)
-CREATE POLICY "Authenticated users can insert restaurants" 
+-- Allow anyone to insert restaurants (public access)
+CREATE POLICY "Anyone can insert restaurants" 
   ON restaurants FOR INSERT 
-  TO authenticated
+  USING (true)
   WITH CHECK (true);
 
 -- 6. Create policies for profiles

@@ -111,7 +111,7 @@ export const AddRestaurant: React.FC<AddRestaurantProps> = ({
           {
             ...formData,
             dietary_restrictions: selectedDietaryRestrictions,
-            user_id: userId
+            user_id: userId || null // Allow null for anonymous submissions
           }
         ])
         .select()
@@ -119,7 +119,7 @@ export const AddRestaurant: React.FC<AddRestaurantProps> = ({
 
       if (restaurantError) throw restaurantError
 
-      // Insert review
+      // Insert review only if we have a user ID
       if (userId && restaurantData) {
         const { error: reviewError } = await supabase
           .from('reviews')
@@ -332,6 +332,11 @@ export const AddRestaurant: React.FC<AddRestaurantProps> = ({
             {/* Your Review */}
             <div className="form-section">
               <h3>Your Review</h3>
+              {!userId && (
+                <p className="info-note">
+                  Note: Reviews require user authentication. Only the restaurant will be added.
+                </p>
+              )}
               
               <div className="form-group">
                 <label>Your Rating *</label>
