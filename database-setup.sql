@@ -1,22 +1,29 @@
 -- Database setup for Restaurant Reviews App
 -- Run these commands in your Supabase SQL Editor in order
 
--- 1. Create restaurants table
+-- 1. Create profiles table first (extends auth.users)
+CREATE TABLE profiles (
+  id UUID REFERENCES auth.users PRIMARY KEY,
+  username TEXT UNIQUE,
+  avatar_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 2. Create restaurants table (now can reference profiles)
 CREATE TABLE restaurants (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   description TEXT,
   address TEXT NOT NULL,
   cuisine_type TEXT NOT NULL,
+  restaurant_type TEXT NOT NULL,
+  cost_level TEXT NOT NULL CHECK (cost_level IN ('cheap', 'moderate', 'expensive', 'very-expensive', 'extremely-expensive')),
+  google_maps_link TEXT,
+  dietary_restrictions TEXT[], -- Array of dietary restrictions
   image_url TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
--- 2. Create profiles table (extends auth.users)
-CREATE TABLE profiles (
-  id UUID REFERENCES auth.users PRIMARY KEY,
-  username TEXT UNIQUE,
-  avatar_url TEXT,
+  image_base64 TEXT, -- For uploaded images
+  user_id UUID REFERENCES profiles(id), -- Who added this restaurant
+  tripcode TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -86,7 +93,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 9. Create trigger to call the function when a new user signs up
+-- 9. Create trigger to call the function when a new user signs up (only if it doesn't exist)
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();

@@ -1,14 +1,15 @@
 import React from 'react'
-import { Search, Star, User, LogOut } from 'lucide-react'
+import { Search, Star, User, LogOut, Plus } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 interface HeaderProps {
   user: any
   searchTerm: string
   onSearchChange: (term: string) => void
+  onAddRestaurant: () => void
 }
 
-export const Header: React.FC<HeaderProps> = ({ user, searchTerm, onSearchChange }) => {
+export const Header: React.FC<HeaderProps> = ({ user, searchTerm, onSearchChange, onAddRestaurant }) => {
   const handleSignOut = async () => {
     await supabase.auth.signOut()
   }
@@ -34,6 +35,14 @@ export const Header: React.FC<HeaderProps> = ({ user, searchTerm, onSearchChange
           </div>
 
           <div className="user-menu">
+            <button 
+              onClick={onAddRestaurant}
+              className="btn btn-primary add-restaurant-btn"
+            >
+              <Plus size={16} />
+              Add Restaurant
+            </button>
+            
             {user ? (
               <div className="user-info">
                 <User className="user-icon" />
@@ -45,8 +54,7 @@ export const Header: React.FC<HeaderProps> = ({ user, searchTerm, onSearchChange
               </div>
             ) : (
               <div className="auth-buttons">
-                <button className="btn btn-secondary">Sign In</button>
-                <button className="btn btn-primary">Sign Up</button>
+                {/* Authentication buttons removed */}
               </div>
             )}
           </div>

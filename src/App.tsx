@@ -3,6 +3,7 @@ import { Header } from './components/Header'
 import { RestaurantCard } from './components/RestaurantCard'
 import { ReviewCard } from './components/ReviewCard'
 import { AddReview } from './components/AddReview'
+import { AddRestaurant } from './components/AddRestaurant'
 import { supabase, type Restaurant, type Review } from './lib/supabase'
 import { ArrowLeft } from 'lucide-react'
 import './App.css'
@@ -14,6 +15,7 @@ function App() {
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
+  const [showAddRestaurant, setShowAddRestaurant] = useState(false)
 
   useEffect(() => {
     // Get initial session
@@ -106,6 +108,15 @@ function App() {
     }
   }
 
+  const handleRestaurantAdded = () => {
+    fetchRestaurants()
+    setShowAddRestaurant(false)
+  }
+
+  const handleAddRestaurant = () => {
+    setShowAddRestaurant(true)
+  }
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -121,6 +132,7 @@ function App() {
         user={user}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onAddRestaurant={handleAddRestaurant}
       />
 
       <main className="main-content">
@@ -223,6 +235,14 @@ function App() {
           )}
         </div>
       </main>
+
+      {showAddRestaurant && (
+        <AddRestaurant
+          onClose={() => setShowAddRestaurant(false)}
+          onRestaurantAdded={handleRestaurantAdded}
+          userId={user?.id}
+        />
+      )}
     </div>
   )
 }

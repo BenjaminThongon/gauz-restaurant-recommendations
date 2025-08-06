@@ -12,7 +12,14 @@ export interface Restaurant {
   description: string
   address: string
   cuisine_type: string
+  restaurant_type: string
+  cost_level: 'cheap' | 'moderate' | 'expensive' | 'very-expensive' | 'extremely-expensive'
+  google_maps_link?: string
+  dietary_restrictions: string[]
   image_url?: string
+  image_base64?: string
+  user_id?: string
+  tripcode?: string
   created_at: string
 }
 
