@@ -642,6 +642,21 @@
   font-size: 0.95rem;
 }
 
+.tripcode {
+  font-family: monospace;
+  color: var(--accent-primary);
+  font-weight: bold;
+}
+
+.visit-date {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

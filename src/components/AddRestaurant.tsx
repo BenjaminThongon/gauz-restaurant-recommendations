@@ -60,17 +60,35 @@ export const AddRestaurant: React.FC<AddTripProps> = ({
   
   const [generatedTripcode, setGeneratedTripcode] = useState('')
 
-  // Simple tripcode generation (like imageboards)
+  // Generate tripcode like imageboards (name!password -> name!hashedpassword)
   const generateTripcode = (input: string) => {
     if (!input) return ''
-    // Simple hash function for tripcode (in real app, use crypto.subtle or similar)
-    let hash = 0
-    for (let i = 0; i < input.length; i++) {
-      const char = input.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
-      hash = hash & hash // Convert to 32bit integer
+    
+    // Check if input contains '!' separator
+    if (input.includes('!')) {
+      const [name, password] = input.split('!', 2)
+      if (!password) return input // Just return input if no password after !
+      
+      // Simple hash function for the password part
+      let hash = 0
+      for (let i = 0; i < password.length; i++) {
+        const char = password.charCodeAt(i)
+        hash = ((hash << 5) - hash) + char
+        hash = hash & hash // Convert to 32bit integer
+      }
+      
+      // Return name + ! + hashed password (8 chars)
+      return name + '!' + Math.abs(hash).toString(36).substring(0, 8)
+    } else {
+      // If no '!' separator, treat whole input as password and add default prefix
+      let hash = 0
+      for (let i = 0; i < input.length; i++) {
+        const char = input.charCodeAt(i)
+        hash = ((hash << 5) - hash) + char
+        hash = hash & hash
+      }
+      return '!' + Math.abs(hash).toString(36).substring(0, 8)
     }
-    return '!' + Math.abs(hash).toString(36).substring(0, 8)
   }
 
   const handleTripcodeInput = (value: string) => {
@@ -323,23 +341,23 @@ export const AddRestaurant: React.FC<AddTripProps> = ({
               </div>
 
               <div className="form-group">
-                <label htmlFor="tripcode_input">Tripcode Password *</label>
+                <label htmlFor="tripcode_input">Tripcode *</label>
                 <input
                   id="tripcode_input"
-                  type="password"
+                  type="text"
                   value={tripData.tripcode_input}
                   onChange={(e) => handleTripcodeInput(e.target.value)}
                   className="input"
-                  placeholder="Enter password for your anonymous signature"
+                  placeholder="Enter name!password or just password"
                   required
                 />
                 {generatedTripcode && (
                   <small className="tripcode-preview">
-                    Your tripcode: <strong>{generatedTripcode}</strong>
+                    Preview: <strong>{generatedTripcode}</strong>
                   </small>
                 )}
                 <small className="form-help">
-                  This creates your anonymous signature (like 4chan tripcodes)
+                  Format: "name!password" → "name!hashedpass" or just "password" → "!hashedpass"
                 </small>
               </div>
 

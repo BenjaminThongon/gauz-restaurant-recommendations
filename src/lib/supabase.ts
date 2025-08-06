@@ -18,17 +18,28 @@ export interface Restaurant {
   dietary_restrictions: string[]
   image_url?: string
   image_base64?: string
+  created_at: string
+}
+
+export interface Trip {
+  id: string
+  restaurant_id: string
+  tripcode: string
+  rating: number
+  review_text: string
+  visit_date: string
   user_id?: string
-  tripcode?: string
   created_at: string
 }
 
 export interface Review {
   id: string
   restaurant_id: string
-  user_id: string
+  user_id?: string | null  // Optional for anonymous trips
+  tripcode: string         // Anonymous signature
   rating: number
-  comment: string
+  review_text: string      // Changed from 'comment' to 'review_text'
+  visit_date?: string      // When they visited
   created_at: string
   profiles?: {
     username: string

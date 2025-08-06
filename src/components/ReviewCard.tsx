@@ -21,14 +21,10 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
       <div className="review-header">
         <div className="reviewer-info">
           <div className="reviewer-avatar">
-            {review.profiles?.avatar_url ? (
-              <img src={review.profiles.avatar_url} alt={review.profiles.username} />
-            ) : (
-              <User size={20} />
-            )}
+            <User size={20} />
           </div>
           <div className="reviewer-details">
-            <h4>{review.profiles?.username || 'Anonymous'}</h4>
+            <h4 className="tripcode">{review.tripcode}</h4>
             <div className="review-date">
               <Calendar size={14} />
               <span>{formatDate(review.created_at)}</span>
@@ -39,10 +35,16 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
         <div className="review-rating">
           <StarRating rating={review.rating} readonly />
         </div>
+        {review.visit_date && (
+          <div className="visit-date">
+            <Calendar size={14} />
+            <span>Visited: {formatDate(review.visit_date)}</span>
+          </div>
+        )}
       </div>
 
       <div className="review-content">
-        <p>{review.comment}</p>
+        <p>{review.review_text}</p>
       </div>
     </div>
   )

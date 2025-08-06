@@ -4,7 +4,7 @@ import { RestaurantCard } from './components/RestaurantCard'
 import { ReviewCard } from './components/ReviewCard'
 import { AddReview } from './components/AddReview'
 import { AddRestaurant } from './components/AddRestaurant'
-import { supabase, type Restaurant, type Review } from './lib/supabase'
+import { supabase, type Restaurant, type Trip } from './lib/supabase'
 import { ArrowLeft } from 'lucide-react'
 import './App.css'
 
@@ -62,7 +62,7 @@ function App() {
   const fetchReviews = async (restaurantId: string) => {
     try {
       const { data, error } = await supabase
-        .from('reviews')
+        .from('trips')
         .select(`
           *,
           profiles (
