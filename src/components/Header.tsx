@@ -38,9 +38,10 @@ export const Header: React.FC<HeaderProps> = ({ user, searchTerm, onSearchChange
             <button 
               onClick={onAddRestaurant}
               className="btn btn-primary add-restaurant-btn"
+              title="Add your restaurant trip/review"
             >
               <Plus size={16} />
-              Add Restaurant
+              Add Trip
             </button>
             
             {user ? (

@@ -3,7 +3,7 @@ import { X, Upload } from 'lucide-react'
 import { StarRating } from './StarRating'
 import { supabase } from '../lib/supabase'
 
-interface AddRestaurantProps {
+interface AddTripProps {
   onClose: () => void
   onRestaurantAdded: () => void
   userId?: string
@@ -37,7 +37,7 @@ const COST_LEVELS = [
   { value: 'extremely-expensive', label: 'Extremely Expensive ($$$$$)', description: 'Over $100 per person' }
 ]
 
-export const AddRestaurant: React.FC<AddRestaurantProps> = ({
+export const AddRestaurant: React.FC<AddTripProps> = ({
   onClose,
   onRestaurantAdded,
   userId
@@ -50,9 +50,33 @@ export const AddRestaurant: React.FC<AddRestaurantProps> = ({
     restaurant_type: '',
     cost_level: 'moderate' as const,
     google_maps_link: '',
-    tripcode: '',
     image_base64: ''
   })
+  
+  const [tripData, setTripData] = useState({
+    tripcode_input: '', // User's password for tripcode generation
+    visit_date: new Date().toISOString().split('T')[0], // Today's date as default
+  })
+  
+  const [generatedTripcode, setGeneratedTripcode] = useState('')
+
+  // Simple tripcode generation (like imageboards)
+  const generateTripcode = (input: string) => {
+    if (!input) return ''
+    // Simple hash function for tripcode (in real app, use crypto.subtle or similar)
+    let hash = 0
+    for (let i = 0; i < input.length; i++) {
+      const char = input.charCodeAt(i)
+      hash = ((hash << 5) - hash) + char
+      hash = hash & hash // Convert to 32bit integer
+    }
+    return '!' + Math.abs(hash).toString(36).substring(0, 8)
+  }
+
+  const handleTripcodeInput = (value: string) => {
+    setTripData(prev => ({ ...prev, tripcode_input: value }))
+    setGeneratedTripcode(generateTripcode(value))
+  }
   
   const [rating, setRating] = useState(0)
   const [review, setReview] = useState('')
@@ -96,6 +120,11 @@ export const AddRestaurant: React.FC<AddRestaurantProps> = ({
       return
     }
 
+    if (!generatedTripcode && !tripData.tripcode_input) {
+      alert('Please enter a tripcode password for your anonymous signature')
+      return
+    }
+
     if (!review.trim()) {
       alert('Please write a review')
       return
@@ -104,36 +133,51 @@ export const AddRestaurant: React.FC<AddRestaurantProps> = ({
     setIsSubmitting(true)
 
     try {
-      // Insert restaurant
-      const { data: restaurantData, error: restaurantError } = await supabase
+      // First, check if restaurant already exists
+      const { data: existingRestaurant } = await supabase
         .from('restaurants')
-        .insert([
-          {
-            ...formData,
-            dietary_restrictions: selectedDietaryRestrictions,
-            user_id: userId || null // Allow null for anonymous submissions
-          }
-        ])
-        .select()
+        .select('id')
+        .eq('name', formData.name)
+        .eq('address', formData.address)
         .single()
 
-      if (restaurantError) throw restaurantError
+      let restaurantId: string
 
-      // Insert review only if we have a user ID
-      if (userId && restaurantData) {
-        const { error: reviewError } = await supabase
-          .from('reviews')
+      if (existingRestaurant) {
+        // Restaurant exists, use its ID
+        restaurantId = existingRestaurant.id
+      } else {
+        // Create new restaurant
+        const { data: restaurantData, error: restaurantError } = await supabase
+          .from('restaurants')
           .insert([
             {
-              restaurant_id: restaurantData.id,
-              user_id: userId,
-              rating,
-              comment: review
+              ...formData,
+              dietary_restrictions: selectedDietaryRestrictions
             }
           ])
+          .select()
+          .single()
 
-        if (reviewError) throw reviewError
+        if (restaurantError) throw restaurantError
+        restaurantId = restaurantData.id
       }
+
+      // Insert trip (the main content - user's visit/review)
+      const { error: tripError } = await supabase
+        .from('trips')
+        .insert([
+          {
+            restaurant_id: restaurantId,
+            tripcode: generatedTripcode || generateTripcode(tripData.tripcode_input),
+            rating,
+            review_text: review,
+            visit_date: tripData.visit_date,
+            user_id: userId || null // Optional for registered users
+          }
+        ])
+
+      if (tripError) throw tripError
 
       onRestaurantAdded()
       onClose()
@@ -149,10 +193,14 @@ export const AddRestaurant: React.FC<AddRestaurantProps> = ({
     <div className="modal-overlay">
       <div className="modal-content add-restaurant-modal">
         <div className="modal-header">
-          <h2>Add New Restaurant</h2>
+          <h2>Add Your Restaurant Trip</h2>
           <button onClick={onClose} className="btn-icon">
             <X size={20} />
           </button>
+        </div>
+        
+        <div className="modal-description">
+          <p>Share your restaurant visit! Add the restaurant details and your review with an anonymous tripcode signature.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="add-restaurant-form">
@@ -275,14 +323,35 @@ export const AddRestaurant: React.FC<AddRestaurantProps> = ({
               </div>
 
               <div className="form-group">
-                <label htmlFor="tripcode">Trip Code</label>
+                <label htmlFor="tripcode_input">Tripcode Password *</label>
                 <input
-                  id="tripcode"
-                  type="text"
-                  value={formData.tripcode}
-                  onChange={(e) => handleInputChange('tripcode', e.target.value)}
+                  id="tripcode_input"
+                  type="password"
+                  value={tripData.tripcode_input}
+                  onChange={(e) => handleTripcodeInput(e.target.value)}
                   className="input"
-                  placeholder="Optional trip or reference code"
+                  placeholder="Enter password for your anonymous signature"
+                  required
+                />
+                {generatedTripcode && (
+                  <small className="tripcode-preview">
+                    Your tripcode: <strong>{generatedTripcode}</strong>
+                  </small>
+                )}
+                <small className="form-help">
+                  This creates your anonymous signature (like 4chan tripcodes)
+                </small>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="visit_date">Visit Date *</label>
+                <input
+                  id="visit_date"
+                  type="date"
+                  value={tripData.visit_date}
+                  onChange={(e) => setTripData(prev => ({ ...prev, visit_date: e.target.value }))}
+                  className="input"
+                  required
                 />
               </div>
 
@@ -329,12 +398,12 @@ export const AddRestaurant: React.FC<AddRestaurantProps> = ({
               </div>
             </div>
 
-            {/* Your Review */}
+            {/* Your Trip Review */}
             <div className="form-section">
-              <h3>Your Review</h3>
+              <h3>Your Trip Review</h3>
               {!userId && (
                 <p className="info-note">
-                  Note: Reviews require user authentication. Only the restaurant will be added.
+                  Anonymous review - your tripcode will be your signature.
                 </p>
               )}
               
