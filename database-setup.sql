@@ -38,7 +38,7 @@ CREATE TABLE trips (
   rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
   review_text TEXT NOT NULL,
   visit_date DATE, -- When they visited the restaurant
-  user_id UUID REFERENCES profiles(id), -- Optional - for registered users
+  user_id UUID, -- Optional - just store the user ID without foreign key constraint
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -105,8 +105,18 @@ DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
+  -- Extract username from Discord metadata or use email as fallback
   INSERT INTO public.profiles (id, username)
-  VALUES (new.id, new.email);
+  VALUES (
+    new.id, 
+    COALESCE(
+      new.raw_user_meta_data->>'full_name',
+      new.raw_user_meta_data->>'name', 
+      new.raw_user_meta_data->>'username',
+      new.email,
+      'User'
+    )
+  );
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
