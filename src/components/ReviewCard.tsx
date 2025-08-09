@@ -24,7 +24,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
             <User size={20} />
           </div>
           <div className="reviewer-details">
-            <h4 className="tripcode">{review.tripcode}</h4>
+            <h4 className="discord-username">{review.discord_username}</h4>
             <div className="review-date">
               <Calendar size={14} />
               <span>{formatDate(review.created_at)}</span>

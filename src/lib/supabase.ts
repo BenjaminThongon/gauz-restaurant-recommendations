@@ -24,7 +24,7 @@ export interface Restaurant {
 export interface Trip {
   id: string
   restaurant_id: string
-  tripcode: string
+  discord_username: string
   rating: number
   review_text: string
   visit_date: string
@@ -35,11 +35,11 @@ export interface Trip {
 export interface Review {
   id: string
   restaurant_id: string
-  user_id?: string | null  // Optional for anonymous trips
-  tripcode: string         // Anonymous signature
+  user_id?: string | null
+  discord_username: string    // Discord username instead of tripcode
   rating: number
-  review_text: string      // Changed from 'comment' to 'review_text'
-  visit_date?: string      // When they visited
+  review_text: string
+  visit_date?: string
   created_at: string
   profiles?: {
     username: string

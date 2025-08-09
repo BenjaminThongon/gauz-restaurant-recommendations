@@ -34,7 +34,7 @@ CREATE TABLE restaurants (
 CREATE TABLE trips (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   restaurant_id UUID REFERENCES restaurants(id) ON DELETE CASCADE NOT NULL,
-  tripcode TEXT NOT NULL, -- Hashed anonymous signature (like 4chan tripcodes)
+  discord_username TEXT NOT NULL, -- Discord username from OAuth
   rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
   review_text TEXT NOT NULL,
   visit_date DATE, -- When they visited the restaurant
@@ -91,10 +91,10 @@ CREATE POLICY "Anyone can insert trips"
   ON trips FOR INSERT 
   WITH CHECK (true);
 
--- Optional: Allow users to update their own trips (by tripcode or user_id)
+-- Optional: Allow users to update their own trips (by discord_username or user_id)
 CREATE POLICY "Users can update their own trips" 
   ON trips FOR UPDATE 
-  USING (auth.uid() = user_id OR tripcode IS NOT NULL);
+  USING (auth.uid() = user_id OR discord_username IS NOT NULL);
 
 CREATE POLICY "Users can delete their own trips" 
   ON trips FOR DELETE 

@@ -11,23 +11,23 @@ INSERT INTO restaurants (name, description, address, cuisine_type, restaurant_ty
   ('Taco Libre', 'Fresh Mexican street food with authentic flavors and locally sourced ingredients.', '654 Cedar Rd, Eastside', 'Mexican', 'Street Food', 'cheap', 'https://maps.google.com/?q=Taco+Libre+Eastside', ARRAY['Vegetarian', 'Gluten-Free'], 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=800&h=600&fit=crop'),
   ('The Burger Joint', 'Gourmet burgers made with grass-fed beef and artisanal toppings.', '987 Maple Dr, Southside', 'American', 'Casual Dining', 'moderate', 'https://maps.google.com/?q=Burger+Joint+Southside', ARRAY['Gluten-Free'], 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=800&h=600&fit=crop');
 
--- Sample trips (user visits/reviews with tripcodes - this is the main social content)
--- Note: In a real app, tripcodes would be generated from user input, these are just examples
-INSERT INTO trips (restaurant_id, tripcode, rating, review_text, visit_date) 
+-- Sample trips (user visits/reviews with Discord usernames - this is the main social content)
+-- Note: In a real app, Discord usernames would come from OAuth, these are just examples
+INSERT INTO trips (restaurant_id, discord_username, rating, review_text, visit_date) 
 SELECT 
   r.id,
-  trip_data.tripcode,
+  trip_data.discord_username,
   trip_data.rating,
   trip_data.review_text,
   trip_data.visit_date::date
 FROM restaurants r
 CROSS JOIN (
   VALUES 
-    ('Bella Italia', '!AnonymousEater1', 4, 'The carbonara was absolutely incredible! Authentic Italian flavors and the pasta was perfectly al dente. Service was a bit slow but worth the wait.', '2024-12-15'),
-    ('Sakura Sushi', '!SushiLover99', 5, 'Best sushi in town! The omakase was fresh and expertly prepared. The chef really knows what they''re doing. Will definitely be back!', '2024-12-10'),
-    ('Le Bistro', '!FrenchFoodie', 4, 'Lovely atmosphere and classic French dishes. The coq au vin was perfect. A bit pricey but the quality justifies it.', '2024-12-08'),
-    ('Spice Garden', '!CurryKing', 5, 'Amazing Indian food! The spice levels were perfect and they have great vegan options. The naan was fresh and fluffy.', '2024-12-12'),
-    ('Taco Libre', '!TacoTuesday', 3, 'Decent street tacos but nothing special. The carnitas were good but could use more flavor. Good value for the price though.', '2024-12-14'),
-    ('The Burger Joint', '!BurgerCritic', 4, 'Solid gourmet burger! The grass-fed beef really makes a difference. Sweet potato fries were crispy and delicious.', '2024-12-11')
-) AS trip_data(restaurant_name, tripcode, rating, review_text, visit_date)
+    ('Bella Italia', 'FoodieExplorer#1234', 4, 'The carbonara was absolutely incredible! Authentic Italian flavors and the pasta was perfectly al dente. Service was a bit slow but worth the wait.', '2024-12-15'),
+    ('Sakura Sushi', 'SushiMaster99#5678', 5, 'Best sushi in town! The omakase was fresh and expertly prepared. The chef really knows what they''re doing. Will definitely be back!', '2024-12-10'),
+    ('Le Bistro', 'FrenchFoodie#9012', 4, 'Lovely atmosphere and classic French dishes. The coq au vin was perfect. A bit pricey but the quality justifies it.', '2024-12-08'),
+    ('Spice Garden', 'CurryKingdom#3456', 5, 'Amazing Indian food! The spice levels were perfect and they have great vegan options. The naan was fresh and fluffy.', '2024-12-12'),
+    ('Taco Libre', 'TacoTuesday#7890', 3, 'Decent street tacos but nothing special. The carnitas were good but could use more flavor. Good value for the price though.', '2024-12-14'),
+    ('The Burger Joint', 'BurgerCritic#2468', 4, 'Solid gourmet burger! The grass-fed beef really makes a difference. Sweet potato fries were crispy and delicious.', '2024-12-11')
+) AS trip_data(restaurant_name, discord_username, rating, review_text, visit_date)
 WHERE r.name = trip_data.restaurant_name;

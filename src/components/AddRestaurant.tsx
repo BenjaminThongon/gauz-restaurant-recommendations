@@ -54,47 +54,8 @@ export const AddRestaurant: React.FC<AddTripProps> = ({
   })
   
   const [tripData, setTripData] = useState({
-    tripcode_input: '', // User's password for tripcode generation
     visit_date: new Date().toISOString().split('T')[0], // Today's date as default
   })
-  
-  const [generatedTripcode, setGeneratedTripcode] = useState('')
-
-  // Generate tripcode like imageboards (name!password -> name!hashedpassword)
-  const generateTripcode = (input: string) => {
-    if (!input) return ''
-    
-    // Check if input contains '!' separator
-    if (input.includes('!')) {
-      const [name, password] = input.split('!', 2)
-      if (!password) return input // Just return input if no password after !
-      
-      // Simple hash function for the password part
-      let hash = 0
-      for (let i = 0; i < password.length; i++) {
-        const char = password.charCodeAt(i)
-        hash = ((hash << 5) - hash) + char
-        hash = hash & hash // Convert to 32bit integer
-      }
-      
-      // Return name + ! + hashed password (8 chars)
-      return name + '!' + Math.abs(hash).toString(36).substring(0, 8)
-    } else {
-      // If no '!' separator, treat whole input as password and add default prefix
-      let hash = 0
-      for (let i = 0; i < input.length; i++) {
-        const char = input.charCodeAt(i)
-        hash = ((hash << 5) - hash) + char
-        hash = hash & hash
-      }
-      return '!' + Math.abs(hash).toString(36).substring(0, 8)
-    }
-  }
-
-  const handleTripcodeInput = (value: string) => {
-    setTripData(prev => ({ ...prev, tripcode_input: value }))
-    setGeneratedTripcode(generateTripcode(value))
-  }
   
   const [rating, setRating] = useState(0)
   const [review, setReview] = useState('')
@@ -128,6 +89,10 @@ export const AddRestaurant: React.FC<AddTripProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Get current user to extract Discord username
+    const { data: { user } } = await supabase.auth.getUser()
+    const discordUsername = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'Anonymous'
+    
     if (!formData.name || !formData.address || !formData.cuisine_type || !formData.restaurant_type) {
       alert('Please fill in all required fields')
       return
@@ -135,11 +100,6 @@ export const AddRestaurant: React.FC<AddTripProps> = ({
 
     if (rating === 0) {
       alert('Please provide a rating')
-      return
-    }
-
-    if (!generatedTripcode && !tripData.tripcode_input) {
-      alert('Please enter a tripcode password for your anonymous signature')
       return
     }
 
@@ -187,7 +147,7 @@ export const AddRestaurant: React.FC<AddTripProps> = ({
         .insert([
           {
             restaurant_id: restaurantId,
-            tripcode: generatedTripcode || generateTripcode(tripData.tripcode_input),
+            discord_username: discordUsername,
             rating,
             review_text: review,
             visit_date: tripData.visit_date,
@@ -218,7 +178,7 @@ export const AddRestaurant: React.FC<AddTripProps> = ({
         </div>
         
         <div className="modal-description">
-          <p>Share your restaurant visit! Add the restaurant details and your review with an anonymous tripcode signature.</p>
+          <p>Share your restaurant visit! Add the restaurant details and your review with your Discord username.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="add-restaurant-form">
@@ -338,27 +298,6 @@ export const AddRestaurant: React.FC<AddTripProps> = ({
                   className="input"
                   placeholder="https://maps.google.com/..."
                 />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="tripcode_input">Tripcode *</label>
-                <input
-                  id="tripcode_input"
-                  type="text"
-                  value={tripData.tripcode_input}
-                  onChange={(e) => handleTripcodeInput(e.target.value)}
-                  className="input"
-                  placeholder="Enter name!password or just password"
-                  required
-                />
-                {generatedTripcode && (
-                  <small className="tripcode-preview">
-                    Preview: <strong>{generatedTripcode}</strong>
-                  </small>
-                )}
-                <small className="form-help">
-                  Format: "name!password" → "name!hashedpass" or just "password" → "!hashedpass"
-                </small>
               </div>
 
               <div className="form-group">

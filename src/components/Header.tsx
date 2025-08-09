@@ -68,7 +68,7 @@ export const Header: React.FC<HeaderProps> = ({ user, searchTerm, onSearchChange
             {user ? (
               <div className="user-info">
                 <User className="user-icon" />
-                <span>{user.email}</span>
+                <span>{user.user_metadata?.full_name || user.user_metadata?.name || user.email}</span>
                 <button onClick={handleSignOut} className="btn btn-secondary">
                   <LogOut size={16} />
                   Sign Out
