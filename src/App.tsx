@@ -65,13 +65,7 @@ function App() {
     try {
       const { data, error } = await supabase
         .from('trips')
-        .select(`
-          *,
-          profiles (
-            username,
-            avatar_url
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -85,13 +79,7 @@ function App() {
     try {
       const { data, error } = await supabase
         .from('trips')
-        .select(`
-          *,
-          profiles (
-            username,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('restaurant_id', restaurantId)
         .order('created_at', { ascending: false })
 

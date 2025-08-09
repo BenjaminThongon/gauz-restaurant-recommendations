@@ -29,14 +29,20 @@ export const AddReview: React.FC<AddReviewProps> = ({
     setIsSubmitting(true)
 
     try {
+      // Get current user to extract Discord username
+      const { data: { user } } = await supabase.auth.getUser()
+      const discordUsername = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'Anonymous'
+
       const { error } = await supabase
-        .from('reviews')
+        .from('trips')
         .insert([
           {
             restaurant_id: restaurantId,
             user_id: userId,
+            discord_username: discordUsername,
             rating,
-            comment: comment.trim()
+            review_text: comment.trim(),
+            visit_date: new Date().toISOString().split('T')[0] // Today's date
           }
         ])
 
