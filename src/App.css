@@ -946,6 +946,106 @@
   margin-bottom: 2rem;
 }
 
+/* Image Modal Styles */
+.image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+.image-modal-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  cursor: default;
+}
+
+.image-modal-content img {
+  width: 100%;
+  height: auto;
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 0.5rem;
+}
+
+.close-modal {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.close-modal:hover {
+  background: rgba(220, 38, 38, 0.8);
+}
+
+/* Image Gallery Styles */
+.restaurant-images-gallery {
+  margin-bottom: 2rem;
+}
+
+.image-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.gallery-image {
+  position: relative;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+}
+
+.gallery-image:hover {
+  transform: scale(1.02);
+}
+
+.gallery-image img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.restaurant-image-large {
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.restaurant-image-large img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
 /* Image Gallery Styles */
 .restaurant-images-gallery {
   margin-bottom: 2rem;

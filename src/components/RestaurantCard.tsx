@@ -37,7 +37,18 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
     ))
   }
 
-  const imageUrl = restaurant.image_base64 || restaurant.image_url
+  // Get the first available image (prioritize multiple images, then fall back to single)
+  const getFirstImage = () => {
+    if (restaurant.image_base64s && restaurant.image_base64s.length > 0) {
+      return restaurant.image_base64s[0]
+    }
+    if (restaurant.image_urls && restaurant.image_urls.length > 0) {
+      return restaurant.image_urls[0]
+    }
+    return restaurant.image_base64 || restaurant.image_url
+  }
+
+  const imageUrl = getFirstImage()
 
   return (
     <div className="card restaurant-card" onClick={onClick}>
