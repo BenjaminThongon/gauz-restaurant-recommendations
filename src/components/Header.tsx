@@ -16,10 +16,15 @@ export const Header: React.FC<HeaderProps> = ({ user, searchTerm, onSearchChange
 
   const handleDiscordLogin = async () => {
     try {
+      // Force localhost:5173 for development, use origin for production
+      const isDev = window.location.hostname === 'localhost'
+      const redirectUrl = isDev ? 'http://localhost:5173' : window.location.origin
+      console.log('Redirecting to:', redirectUrl) // Debug log
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'discord',
         options: {
-          redirectTo: `${window.location.origin}`
+          redirectTo: redirectUrl
         }
       })
       if (error) {
