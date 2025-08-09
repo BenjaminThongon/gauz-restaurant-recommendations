@@ -12,6 +12,7 @@ function App() {
   const [user, setUser] = useState<any>(null)
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
+  const [allReviews, setAllReviews] = useState<Review[]>([]) // Store all reviews for homepage calculations
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
@@ -35,6 +36,7 @@ function App() {
 
   useEffect(() => {
     fetchRestaurants()
+    fetchAllReviews() // Fetch all reviews for homepage calculations
   }, [])
 
   useEffect(() => {
@@ -56,6 +58,26 @@ function App() {
       console.error('Error fetching restaurants:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchAllReviews = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('trips')
+        .select(`
+          *,
+          profiles (
+            username,
+            avatar_url
+          )
+        `)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setAllReviews(data || [])
+    } catch (error) {
+      console.error('Error fetching all reviews:', error)
     }
   }
 
@@ -81,10 +103,18 @@ function App() {
   }
 
   const calculateAverageRating = (restaurantId: string) => {
-    const restaurantReviews = reviews.filter(r => r.restaurant_id === restaurantId)
+    // Use allReviews for homepage calculations, reviews for detail view
+    const reviewsToUse = selectedRestaurant ? reviews : allReviews
+    const restaurantReviews = reviewsToUse.filter(r => r.restaurant_id === restaurantId)
     if (restaurantReviews.length === 0) return 0
     const sum = restaurantReviews.reduce((acc, review) => acc + review.rating, 0)
     return sum / restaurantReviews.length
+  }
+
+  const getReviewCount = (restaurantId: string) => {
+    // Use allReviews for homepage calculations, reviews for detail view
+    const reviewsToUse = selectedRestaurant ? reviews : allReviews
+    return reviewsToUse.filter(r => r.restaurant_id === restaurantId).length
   }
 
   const filteredRestaurants = restaurants.filter(restaurant =>
@@ -106,10 +136,12 @@ function App() {
     if (selectedRestaurant) {
       fetchReviews(selectedRestaurant.id)
     }
+    fetchAllReviews() // Refresh all reviews for homepage calculations
   }
 
   const handleRestaurantAdded = () => {
     fetchRestaurants()
+    fetchAllReviews() // Refresh all reviews to include any new reviews from the add form
     setShowAddRestaurant(false)
   }
 
@@ -213,7 +245,7 @@ function App() {
                       key={restaurant.id}
                       restaurant={restaurant}
                       averageRating={calculateAverageRating(restaurant.id)}
-                      reviewCount={reviews.filter(r => r.restaurant_id === restaurant.id).length}
+                      reviewCount={getReviewCount(restaurant.id)}
                       onClick={() => handleRestaurantClick(restaurant)}
                     />
                   ))}
