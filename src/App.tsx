@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Header } from './components/Header'
 import { RestaurantCard } from './components/RestaurantCard'
-import { ReviewCard } from './components/ReviewCard'
 import { AddComment } from './components/AddComment'
 import { CommentCard } from './components/CommentCard'
 import { AddRestaurant } from './components/AddRestaurant'
@@ -49,9 +48,10 @@ function App() {
   }, [selectedRestaurant])
 
   useEffect(() => {
-    // When reviews are loaded, fetch comments for the first review (the trip log we're viewing)
     if (reviews.length > 0) {
-      fetchComments(reviews[0].id) // Get comments for the most recent trip log
+      fetchComments(reviews[0].id)
+    } else {
+      setComments([])
     }
   }, [reviews])
 
@@ -115,25 +115,35 @@ function App() {
     }
   }
 
+  const getCostLevelDisplay = (costLevel: string | null | undefined): string => {
+    if (!costLevel) return 'Not specified'
+    
+    const levels: Record<string, string> = {
+      'cheap': '฿ - Budget friendly (under ฿200)',
+      'moderate': '฿฿ - Moderate (฿200-500)',
+      'expensive': '฿฿฿ - Expensive (฿500-1000)',
+      'very-expensive': '฿฿฿฿ - Very expensive (over ฿1000)',
+      'extremely-expensive': '฿฿฿฿฿ - Extremely expensive (over ฿2000)'
+    }
+    
+    return levels[costLevel] || costLevel
+  }
+
   const calculateAverageRating = (restaurantId: string) => {
-    // Use allReviews for homepage calculations, reviews for detail view
-    const reviewsToUse = selectedRestaurant ? reviews : allReviews
-    const restaurantReviews = reviewsToUse.filter(r => r.restaurant_id === restaurantId)
+    const restaurantReviews = allReviews.filter(review => review.restaurant_id === restaurantId)
     if (restaurantReviews.length === 0) return 0
+    
     const sum = restaurantReviews.reduce((acc, review) => acc + review.rating, 0)
     return sum / restaurantReviews.length
   }
 
   const getReviewCount = (restaurantId: string) => {
-    // Use allReviews for homepage calculations, reviews for detail view
-    const reviewsToUse = selectedRestaurant ? reviews : allReviews
-    return reviewsToUse.filter(r => r.restaurant_id === restaurantId).length
+    return allReviews.filter(review => review.restaurant_id === restaurantId).length
   }
 
   const filteredRestaurants = restaurants.filter(restaurant =>
     restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    restaurant.cuisine_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    restaurant.address.toLowerCase().includes(searchTerm.toLowerCase())
+    restaurant.cuisine_type.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const handleRestaurantClick = (restaurant: Restaurant) => {
@@ -142,11 +152,14 @@ function App() {
 
   const handleBackToList = () => {
     setSelectedRestaurant(null)
-    setReviews([])
+    setSelectedImage(null)
+  }
+
+  const handleImageClick = (imageUrl: string) => {
+    setSelectedImage(imageUrl)
   }
 
   const handleCommentAdded = () => {
-    // Refresh comments for the current trip log
     if (reviews.length > 0) {
       fetchComments(reviews[0].id)
     }
@@ -154,7 +167,6 @@ function App() {
 
   const handleRestaurantAdded = () => {
     fetchRestaurants()
-    fetchAllReviews() // Refresh all reviews to include any new reviews from the add form
     setShowAddRestaurant(false)
   }
 
@@ -200,36 +212,42 @@ function App() {
                   selectedRestaurant.image_url || selectedRestaurant.image_base64) && (
                   <div className="restaurant-images-gallery">
                     {selectedRestaurant.image_base64s && selectedRestaurant.image_base64s.length > 0 ? (
-                      // Multiple images from new system
-                      <div className="image-gallery">
+                      <div className="image-grid">
                         {selectedRestaurant.image_base64s.map((image, index) => (
-                          <div key={index} className="gallery-image" onClick={() => setSelectedImage(image)}>
-                            <img 
-                              src={image} 
-                              alt={`${selectedRestaurant.name} ${index + 1}`} 
-                            />
-                          </div>
+                          <img
+                            key={index}
+                            src={`data:image/jpeg;base64,${image}`}
+                            alt={`${selectedRestaurant.name} ${index + 1}`}
+                            className="gallery-image"
+                            onClick={() => handleImageClick(`data:image/jpeg;base64,${image}`)}
+                          />
                         ))}
                       </div>
-                    ) : (
-                      // Fallback to single image from old system
-                      <div className="restaurant-image-large">
-                        <img 
-                          src={selectedRestaurant.image_base64 || selectedRestaurant.image_url} 
-                          alt={selectedRestaurant.name}
-                          onClick={() => setSelectedImage(selectedRestaurant.image_base64 || selectedRestaurant.image_url || '')}
-                        />
-                      </div>
-                    )}
+                    ) : selectedRestaurant.image_url ? (
+                      <img
+                        src={selectedRestaurant.image_url}
+                        alt={selectedRestaurant.name}
+                        className="restaurant-image"
+                        onClick={() => handleImageClick(selectedRestaurant.image_url!)}
+                      />
+                    ) : selectedRestaurant.image_base64 ? (
+                      <img
+                        src={`data:image/jpeg;base64,${selectedRestaurant.image_base64}`}
+                        alt={selectedRestaurant.name}
+                        className="restaurant-image"
+                        onClick={() => handleImageClick(`data:image/jpeg;base64,${selectedRestaurant.image_base64}`)}
+                      />
+                    ) : null}
                   </div>
                 )}
-                
+
                 <div className="restaurant-meta">
                   <h1>{selectedRestaurant.name}</h1>
                   <p className="restaurant-description">{selectedRestaurant.description}</p>
                   <div className="restaurant-details">
                     <p><strong>Cuisine:</strong> {selectedRestaurant.cuisine_type}</p>
                     <p><strong>Restaurant Type:</strong> {selectedRestaurant.restaurant_type}</p>
+                    <p><strong>Price Level:</strong> {getCostLevelDisplay(selectedRestaurant.cost_level)}</p>
                     <p><strong>Address:</strong> {selectedRestaurant.address}</p>
                     {selectedRestaurant.google_maps_link && (
                       <p>
@@ -257,52 +275,66 @@ function App() {
                       </div>
                     )}
                   </div>
-                </div>
-              </div>
 
-              <div className="reviews-section">
-                <div className="reviews-header">
-                  <h2>Trip Log</h2>
+                  {/* Trip Log Integration */}
                   {reviews.length > 0 && (
-                    <div className="average-rating">
-                      Rating: {reviews[0].rating} stars
+                    <div className="trip-review-section">
+                      <h3>Trip Review</h3>
+                      <div className="trip-review">
+                        <div className="review-header">
+                          <div className="review-author">
+                            <span className="author-name">{reviews[0].discord_username}</span>
+                            <div className="review-rating">
+                              {Array.from({ length: 5 }, (_, i) => (
+                                <span key={i} className={`star ${i < reviews[0].rating ? 'filled' : 'empty'}`}>
+                                  ★
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="review-date">
+                            {new Date(reviews[0].created_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <div className="review-text">
+                          {reviews[0].review_text}
+                        </div>
+                        {reviews[0].visit_date && (
+                          <div className="visit-date">
+                            <strong>Visited:</strong> {new Date(reviews[0].visit_date).toLocaleDateString()}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
-                </div>
 
-                <div className="trip-log">
-                  {reviews.length > 0 ? (
-                    <ReviewCard key={reviews[0].id} review={reviews[0]} />
-                  ) : (
-                    <div className="no-reviews">
-                      <p>No trip log found for this restaurant!</p>
+                  {/* Comments Section */}
+                  <div className="comments-section">
+                    <div className="comments-header">
+                      <h3>Comments ({comments.length})</h3>
                     </div>
-                  )}
-                </div>
 
-                <div className="comments-section">
-                  <div className="comments-header">
-                    <h3>Comments ({comments.length})</h3>
-                  </div>
-
-                  {user && reviews.length > 0 && (
-                    <AddComment
-                      tripId={reviews[0].id}
-                      userId={user.id}
-                      onCommentAdded={handleCommentAdded}
-                    />
-                  )}
-
-                  <div className="comments-list">
-                    {comments.length > 0 ? (
-                      comments.map(comment => (
-                        <CommentCard key={comment.id} comment={comment} />
-                      ))
-                    ) : (
-                      <div className="no-comments">
-                        <p>No comments yet. Be the first to comment on this trip!</p>
+                    {user && reviews.length > 0 && (
+                      <div className="add-comment">
+                        <AddComment
+                          tripId={reviews[0].id}
+                          userId={user.id}
+                          onCommentAdded={handleCommentAdded}
+                        />
                       </div>
                     )}
+
+                    <div className="comments-list">
+                      {comments.length > 0 ? (
+                        comments.map(comment => (
+                          <CommentCard key={comment.id} comment={comment} />
+                        ))
+                      ) : (
+                        <div className="no-comments">
+                          <p>No comments yet. Be the first to comment on this trip!</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
