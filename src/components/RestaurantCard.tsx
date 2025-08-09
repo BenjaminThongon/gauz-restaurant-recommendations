@@ -11,13 +11,13 @@ interface RestaurantCardProps {
 
 const getCostLevelDisplay = (level: string) => {
   const levels = {
-    'cheap': '$',
-    'moderate': '$$',
-    'expensive': '$$$',
-    'very-expensive': '$$$$',
-    'extremely-expensive': '$$$$$'
+    'cheap': '฿',
+    'moderate': '฿฿',
+    'expensive': '฿฿฿',
+    'very-expensive': '฿฿฿฿',
+    'extremely-expensive': '฿฿฿฿฿'
   }
-  return levels[level as keyof typeof levels] || '$$'
+  return levels[level as keyof typeof levels] || '฿฿'
 }
 
 export const RestaurantCard: React.FC<RestaurantCardProps> = ({

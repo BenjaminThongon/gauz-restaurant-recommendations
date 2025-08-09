@@ -1,4 +1,4 @@
--- Database setup for Restaurant Reviews App
+-- Database setup for NibbleNet App
 -- Run these commands in your Supabase SQL Editor in order
 
 -- Drop existing tables if they exist (in reverse order due to foreign keys)

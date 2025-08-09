@@ -1,4 +1,4 @@
-# Restaurant Reviews
+# NibbleNet
 
 A modern restaurant review service built with React, TypeScript, and Supabase. Features a sleek dark theme and is optimized for deployment on Vercel.
 

@@ -30,11 +30,11 @@ const RESTAURANT_TYPES = [
 ]
 
 const COST_LEVELS = [
-  { value: 'cheap', label: 'Cheap ($)', description: 'Under $15 per person' },
-  { value: 'moderate', label: 'Moderate ($$)', description: '$15-30 per person' },
-  { value: 'expensive', label: 'Expensive ($$$)', description: '$30-60 per person' },
-  { value: 'very-expensive', label: 'Very Expensive ($$$$)', description: '$60-100 per person' },
-  { value: 'extremely-expensive', label: 'Extremely Expensive ($$$$$)', description: 'Over $100 per person' }
+  { value: 'cheap', label: 'Cheap (฿)', description: 'Under ฿500 per person' },
+  { value: 'moderate', label: 'Moderate (฿฿)', description: '฿500-1,000 per person' },
+  { value: 'expensive', label: 'Expensive (฿฿฿)', description: '฿1,000-2,000 per person' },
+  { value: 'very-expensive', label: 'Very Expensive (฿฿฿฿)', description: '฿2,000-3,500 per person' },
+  { value: 'extremely-expensive', label: 'Extremely Expensive (฿฿฿฿฿)', description: 'Over ฿3,500 per person' }
 ]
 
 export const AddRestaurant: React.FC<AddTripProps> = ({

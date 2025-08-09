@@ -1,4 +1,4 @@
--- Sample data for testing the restaurant review app (trip-based social media style)
+-- Sample data for testing NibbleNet (trip-based social media style)
 -- ⚠️  IMPORTANT: Run database-setup.sql FIRST before running this file!
 -- Run these commands in your Supabase SQL editor AFTER setting up the database tables
 

@@ -20,7 +20,7 @@ export const Header: React.FC<HeaderProps> = ({ user, searchTerm, onSearchChange
         <div className="header-content">
           <div className="logo">
             <Star className="logo-icon" />
-            <h1>RestaurantReviews</h1>
+            <h1>NibbleNet</h1>
           </div>
           
           <div className="search-bar">
