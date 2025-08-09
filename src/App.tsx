@@ -144,13 +144,6 @@ function App() {
     setReviews([])
   }
 
-  const handleReviewAdded = () => {
-    if (selectedRestaurant) {
-      fetchReviews(selectedRestaurant.id)
-    }
-    fetchAllReviews() // Refresh all reviews for homepage calculations
-  }
-
   const handleCommentAdded = () => {
     // Refresh comments for the current trip log
     if (reviews.length > 0) {
