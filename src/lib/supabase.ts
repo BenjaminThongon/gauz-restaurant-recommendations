@@ -18,6 +18,8 @@ export interface Restaurant {
   dietary_restrictions: string[]
   image_url?: string
   image_base64?: string
+  image_urls?: string[] // Array of up to 3 image URLs
+  image_base64s?: string[] // Array of up to 3 base64 images
   created_at: string
 }
 

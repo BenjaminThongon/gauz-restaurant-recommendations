@@ -50,7 +50,8 @@ export const AddRestaurant: React.FC<AddTripProps> = ({
     restaurant_type: '',
     cost_level: 'moderate' as const,
     google_maps_link: '',
-    image_base64: ''
+    image_base64: '',
+    image_base64s: [] as string[] // Array for multiple images
   })
   
   const [tripData, setTripData] = useState({
@@ -75,15 +76,38 @@ export const AddRestaurant: React.FC<AddTripProps> = ({
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = () => {
-        const base64String = reader.result as string
-        handleInputChange('image_base64', base64String)
+    const files = e.target.files
+    if (files && files.length > 0) {
+      const maxImages = 3
+      const currentImages = formData.image_base64s.length
+      const availableSlots = maxImages - currentImages
+      
+      if (availableSlots <= 0) {
+        alert('Maximum 3 images allowed')
+        return
       }
-      reader.readAsDataURL(file)
+      
+      const filesToProcess = Array.from(files).slice(0, availableSlots)
+      
+      filesToProcess.forEach(file => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const base64String = reader.result as string
+          setFormData(prev => ({
+            ...prev,
+            image_base64s: [...prev.image_base64s, base64String]
+          }))
+        }
+        reader.readAsDataURL(file)
+      })
     }
+  }
+
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      image_base64s: prev.image_base64s.filter((_, i) => i !== index)
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -131,7 +155,8 @@ export const AddRestaurant: React.FC<AddTripProps> = ({
           .insert([
             {
               ...formData,
-              dietary_restrictions: selectedDietaryRestrictions
+              dietary_restrictions: selectedDietaryRestrictions,
+              image_base64s: formData.image_base64s.length > 0 ? formData.image_base64s : null
             }
           ])
           .select()
@@ -329,26 +354,44 @@ export const AddRestaurant: React.FC<AddTripProps> = ({
               </div>
 
               <div className="form-group">
-                <label htmlFor="image_upload">Upload Image</label>
+                <label htmlFor="image_upload">Upload Images (Max 3)</label>
                 <div className="image-upload">
                   <input
                     id="image_upload"
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleImageUpload}
                     className="file-input"
+                    disabled={formData.image_base64s.length >= 3}
                   />
-                  <label htmlFor="image_upload" className="file-label">
+                  <label 
+                    htmlFor="image_upload" 
+                    className={`file-label ${formData.image_base64s.length >= 3 ? 'disabled' : ''}`}
+                  >
                     <Upload size={20} />
-                    Choose Image
+                    {formData.image_base64s.length >= 3 ? 'Max Images Reached' : 'Choose Images'}
                   </label>
-                  {formData.image_base64 && (
-                    <div className="image-preview">
-                      <img 
-                        src={formData.image_base64} 
-                        alt="Preview" 
-                        className="preview-image"
-                      />
+                  
+                  {formData.image_base64s.length > 0 && (
+                    <div className="image-previews">
+                      {formData.image_base64s.map((image, index) => (
+                        <div key={index} className="image-preview">
+                          <img 
+                            src={image} 
+                            alt={`Preview ${index + 1}`} 
+                            className="preview-image"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="remove-image"
+                            title="Remove image"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

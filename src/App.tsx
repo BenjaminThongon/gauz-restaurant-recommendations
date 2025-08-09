@@ -16,6 +16,7 @@ function App() {
   const [allReviews, setAllReviews] = useState<Review[]>([]) // Store all reviews for homepage calculations
   const [comments, setComments] = useState<Comment[]>([]) // Comments for the selected trip log
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null) // For image modal
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
   const [showAddRestaurant, setShowAddRestaurant] = useState(false)
@@ -195,12 +196,31 @@ function App() {
               </div>
 
               <div className="restaurant-info-detail">
-                {(selectedRestaurant.image_url || selectedRestaurant.image_base64) && (
-                  <div className="restaurant-image-large">
-                    <img 
-                      src={selectedRestaurant.image_base64 || selectedRestaurant.image_url} 
-                      alt={selectedRestaurant.name} 
-                    />
+                {((selectedRestaurant.image_base64s && selectedRestaurant.image_base64s.length > 0) || 
+                  selectedRestaurant.image_url || selectedRestaurant.image_base64) && (
+                  <div className="restaurant-images-gallery">
+                    {selectedRestaurant.image_base64s && selectedRestaurant.image_base64s.length > 0 ? (
+                      // Multiple images from new system
+                      <div className="image-gallery">
+                        {selectedRestaurant.image_base64s.map((image, index) => (
+                          <div key={index} className="gallery-image" onClick={() => setSelectedImage(image)}>
+                            <img 
+                              src={image} 
+                              alt={`${selectedRestaurant.name} ${index + 1}`} 
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      // Fallback to single image from old system
+                      <div className="restaurant-image-large">
+                        <img 
+                          src={selectedRestaurant.image_base64 || selectedRestaurant.image_url} 
+                          alt={selectedRestaurant.name}
+                          onClick={() => setSelectedImage(selectedRestaurant.image_base64 || selectedRestaurant.image_url || '')}
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
                 
@@ -324,6 +344,21 @@ function App() {
           )}
         </div>
       </main>
+
+      {selectedImage && (
+        <div className="image-modal" onClick={() => setSelectedImage(null)}>
+          <div className="image-modal-content" onClick={(e) => e.stopPropagation()}>
+            <img src={selectedImage} alt="Full size" />
+            <button 
+              className="close-modal" 
+              onClick={() => setSelectedImage(null)}
+              aria-label="Close image"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       {showAddRestaurant && (
         <AddRestaurant

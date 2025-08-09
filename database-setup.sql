@@ -28,6 +28,8 @@ CREATE TABLE restaurants (
   dietary_restrictions TEXT[], -- Array of dietary restrictions
   image_url TEXT,
   image_base64 TEXT, -- For uploaded images
+  image_urls TEXT[], -- Array of up to 3 image URLs
+  image_base64s TEXT[], -- Array of up to 3 base64 images
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
