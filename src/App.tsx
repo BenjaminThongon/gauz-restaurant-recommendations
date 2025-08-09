@@ -171,9 +171,12 @@ function App() {
               </div>
 
               <div className="restaurant-info-detail">
-                {selectedRestaurant.image_url && (
+                {(selectedRestaurant.image_url || selectedRestaurant.image_base64) && (
                   <div className="restaurant-image-large">
-                    <img src={selectedRestaurant.image_url} alt={selectedRestaurant.name} />
+                    <img 
+                      src={selectedRestaurant.image_base64 || selectedRestaurant.image_url} 
+                      alt={selectedRestaurant.name} 
+                    />
                   </div>
                 )}
                 
@@ -182,7 +185,33 @@ function App() {
                   <p className="restaurant-description">{selectedRestaurant.description}</p>
                   <div className="restaurant-details">
                     <p><strong>Cuisine:</strong> {selectedRestaurant.cuisine_type}</p>
+                    <p><strong>Restaurant Type:</strong> {selectedRestaurant.restaurant_type}</p>
                     <p><strong>Address:</strong> {selectedRestaurant.address}</p>
+                    {selectedRestaurant.google_maps_link && (
+                      <p>
+                        <strong>Maps:</strong>{' '}
+                        <a 
+                          href={selectedRestaurant.google_maps_link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="maps-link"
+                        >
+                          View on Google Maps
+                        </a>
+                      </p>
+                    )}
+                    {selectedRestaurant.dietary_restrictions && selectedRestaurant.dietary_restrictions.length > 0 && (
+                      <div className="dietary-info">
+                        <strong>Dietary Options:</strong>
+                        <div className="dietary-tags">
+                          {selectedRestaurant.dietary_restrictions.map(restriction => (
+                            <span key={restriction} className="dietary-tag">
+                              {restriction}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -402,7 +402,7 @@ export const AddRestaurant: React.FC<AddTripProps> = ({
               className="btn btn-primary"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Adding Restaurant...' : 'Add Restaurant'}
+              {isSubmitting ? 'Logging Trip...' : 'Log Restaurant Trip'}
             </button>
           </div>
         </form>
