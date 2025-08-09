@@ -2,6 +2,7 @@
 -- Run these commands in your Supabase SQL Editor in order
 
 -- Drop existing tables if they exist (in reverse order due to foreign keys)
+DROP TABLE IF EXISTS comments CASCADE;
 DROP TABLE IF EXISTS trips CASCADE;
 DROP TABLE IF EXISTS restaurants CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
@@ -42,10 +43,21 @@ CREATE TABLE trips (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 4. Enable Row Level Security (RLS)
+-- 4. Create comments table (for comments on trip logs)
+CREATE TABLE comments (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  trip_id UUID REFERENCES trips(id) ON DELETE CASCADE NOT NULL,
+  discord_username TEXT NOT NULL, -- Discord username from OAuth
+  comment_text TEXT NOT NULL,
+  user_id UUID, -- Optional - just store the user ID without foreign key constraint
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 5. Enable Row Level Security (RLS)
 ALTER TABLE restaurants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE trips ENABLE ROW LEVEL SECURITY;
+ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "Restaurants are viewable by everyone" ON restaurants;
@@ -58,6 +70,10 @@ DROP POLICY IF EXISTS "Trips are viewable by everyone" ON trips;
 DROP POLICY IF EXISTS "Anyone can insert trips" ON trips;
 DROP POLICY IF EXISTS "Users can update their own trips" ON trips;
 DROP POLICY IF EXISTS "Users can delete their own trips" ON trips;
+DROP POLICY IF EXISTS "Comments are viewable by everyone" ON comments;
+DROP POLICY IF EXISTS "Anyone can insert comments" ON comments;
+DROP POLICY IF EXISTS "Users can update their own comments" ON comments;
+DROP POLICY IF EXISTS "Users can delete their own comments" ON comments;
 
 -- 5. Create policies for restaurants (public read)
 CREATE POLICY "Restaurants are viewable by everyone" 
@@ -100,7 +116,25 @@ CREATE POLICY "Users can delete their own trips"
   ON trips FOR DELETE 
   USING (auth.uid() = user_id);
 
--- 8. Create function to automatically create profile on user signup
+-- 8. Create policies for comments (comments on trip logs)
+CREATE POLICY "Comments are viewable by everyone" 
+  ON comments FOR SELECT 
+  USING (true);
+
+CREATE POLICY "Anyone can insert comments" 
+  ON comments FOR INSERT 
+  WITH CHECK (true);
+
+-- Optional: Allow users to update their own comments (by discord_username or user_id)
+CREATE POLICY "Users can update their own comments" 
+  ON comments FOR UPDATE 
+  USING (auth.uid() = user_id OR discord_username IS NOT NULL);
+
+CREATE POLICY "Users can delete their own comments" 
+  ON comments FOR DELETE 
+  USING (auth.uid() = user_id);
+
+-- 9. Create function to automatically create profile on user signup
 DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
@@ -121,7 +155,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 9. Create trigger to call the function when a new user signs up (only if it doesn't exist)
+-- 10. Create trigger to call the function when a new user signs up (only if it doesn't exist)
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users

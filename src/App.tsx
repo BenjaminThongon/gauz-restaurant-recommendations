@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { Header } from './components/Header'
 import { RestaurantCard } from './components/RestaurantCard'
 import { ReviewCard } from './components/ReviewCard'
-import { AddReview } from './components/AddReview'
+import { AddComment } from './components/AddComment'
+import { CommentCard } from './components/CommentCard'
 import { AddRestaurant } from './components/AddRestaurant'
-import { supabase, type Restaurant, type Review } from './lib/supabase'
+import { supabase, type Restaurant, type Review, type Comment } from './lib/supabase'
 import { ArrowLeft } from 'lucide-react'
 import './App.css'
 
@@ -13,6 +14,7 @@ function App() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
   const [allReviews, setAllReviews] = useState<Review[]>([]) // Store all reviews for homepage calculations
+  const [comments, setComments] = useState<Comment[]>([]) // Comments for the selected trip log
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
@@ -44,6 +46,13 @@ function App() {
       fetchReviews(selectedRestaurant.id)
     }
   }, [selectedRestaurant])
+
+  useEffect(() => {
+    // When reviews are loaded, fetch comments for the first review (the trip log we're viewing)
+    if (reviews.length > 0) {
+      fetchComments(reviews[0].id) // Get comments for the most recent trip log
+    }
+  }, [reviews])
 
   const fetchRestaurants = async () => {
     try {
@@ -90,6 +99,21 @@ function App() {
     }
   }
 
+  const fetchComments = async (tripId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('comments')
+        .select('*')
+        .eq('trip_id', tripId)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+      setComments(data || [])
+    } catch (error) {
+      console.error('Error fetching comments:', error)
+    }
+  }
+
   const calculateAverageRating = (restaurantId: string) => {
     // Use allReviews for homepage calculations, reviews for detail view
     const reviewsToUse = selectedRestaurant ? reviews : allReviews
@@ -125,6 +149,13 @@ function App() {
       fetchReviews(selectedRestaurant.id)
     }
     fetchAllReviews() // Refresh all reviews for homepage calculations
+  }
+
+  const handleCommentAdded = () => {
+    // Refresh comments for the current trip log
+    if (reviews.length > 0) {
+      fetchComments(reviews[0].id)
+    }
   }
 
   const handleRestaurantAdded = () => {
@@ -218,32 +249,48 @@ function App() {
 
               <div className="reviews-section">
                 <div className="reviews-header">
-                  <h2>Reviews ({reviews.length})</h2>
-                  {calculateAverageRating(selectedRestaurant.id) > 0 && (
+                  <h2>Trip Log</h2>
+                  {reviews.length > 0 && (
                     <div className="average-rating">
-                      Average: {calculateAverageRating(selectedRestaurant.id).toFixed(1)} stars
+                      Rating: {reviews[0].rating} stars
                     </div>
                   )}
                 </div>
 
-                {user && (
-                  <AddReview
-                    restaurantId={selectedRestaurant.id}
-                    userId={user.id}
-                    onReviewAdded={handleReviewAdded}
-                  />
-                )}
-
-                <div className="reviews-list">
+                <div className="trip-log">
                   {reviews.length > 0 ? (
-                    reviews.map(review => (
-                      <ReviewCard key={review.id} review={review} />
-                    ))
+                    <ReviewCard key={reviews[0].id} review={reviews[0]} />
                   ) : (
                     <div className="no-reviews">
-                      <p>No reviews yet. Be the first to review this restaurant!</p>
+                      <p>No trip log found for this restaurant!</p>
                     </div>
                   )}
+                </div>
+
+                <div className="comments-section">
+                  <div className="comments-header">
+                    <h3>Comments ({comments.length})</h3>
+                  </div>
+
+                  {user && reviews.length > 0 && (
+                    <AddComment
+                      tripId={reviews[0].id}
+                      userId={user.id}
+                      onCommentAdded={handleCommentAdded}
+                    />
+                  )}
+
+                  <div className="comments-list">
+                    {comments.length > 0 ? (
+                      comments.map(comment => (
+                        <CommentCard key={comment.id} comment={comment} />
+                      ))
+                    ) : (
+                      <div className="no-comments">
+                        <p>No comments yet. Be the first to comment on this trip!</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

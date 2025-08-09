@@ -53,3 +53,12 @@ export interface Profile {
   avatar_url?: string
   created_at: string
 }
+
+export interface Comment {
+  id: string
+  trip_id: string
+  discord_username: string
+  comment_text: string
+  user_id?: string
+  created_at: string
+}
