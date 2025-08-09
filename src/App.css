@@ -80,6 +80,22 @@
   gap: 0.75rem;
 }
 
+.btn-discord {
+  background-color: #5865F2;
+  color: white;
+  border-color: #5865F2;
+}
+
+.btn-discord:hover {
+  background-color: #4752C4;
+  border-color: #4752C4;
+}
+
+.discord-icon {
+  width: 16px;
+  height: 16px;
+}
+
 /* Main Content */
 .main-content {
   padding: 2rem 0;
